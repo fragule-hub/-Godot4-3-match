@@ -1,0 +1,7 @@
+[gd_resource type="Resource" script_class="GemStat" load_steps=2 format=3 uid="uid://bfiw0y45ea3pe"]
+
+[ext_resource type="Script" uid="uid://mryah4s0r6yd" path="res://data/gem_stat/gem_stat.gd" id="1_arrea"]
+
+[resource]
+script = ExtResource("1_arrea")
+metadata/_custom_type_script = "uid://mryah4s0r6yd"

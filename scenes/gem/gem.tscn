@@ -1,0 +1,22 @@
+[gd_scene load_steps=3 format=3 uid="uid://1th4nc5swsol"]
+
+[ext_resource type="Script" uid="uid://bi7gjm5q6ebqp" path="res://scenes/gem/gem.gd" id="1_i5n7b"]
+[ext_resource type="SpriteFrames" uid="uid://s5lytb3dahq7" path="res://assets/gems_rotate.tres" id="2_w8hhb"]
+
+[node name="Gem" type="Control"]
+custom_minimum_size = Vector2(32, 32)
+layout_mode = 3
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+offset_right = -608.0
+offset_bottom = -328.0
+grow_horizontal = 2
+grow_vertical = 2
+script = ExtResource("1_i5n7b")
+
+[node name="AnimatedSprite2D" type="AnimatedSprite2D" parent="."]
+position = Vector2(16, 16)
+sprite_frames = ExtResource("2_w8hhb")
+animation = &"ranbow"
+speed_scale = 0.0

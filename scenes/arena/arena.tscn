@@ -1,0 +1,132 @@
+[gd_scene load_steps=27 format=3 uid="uid://cop6xkqylcqqi"]
+
+[ext_resource type="Texture2D" uid="uid://dtk72qvo858gg" path="res://assets/backgrounds/5.png" id="1_1qjuf"]
+[ext_resource type="Script" uid="uid://rtf1mefoen6m" path="res://scenes/arena/arena.gd" id="1_aj7ud"]
+[ext_resource type="Script" uid="uid://mryah4s0r6yd" path="res://data/gem_stat/gem_stat.gd" id="2_ybinm"]
+[ext_resource type="Resource" uid="uid://bfiw0y45ea3pe" path="res://data/gem_stat/gems/white_stat.tres" id="3_5ilg6"]
+[ext_resource type="Script" uid="uid://ca8inr7rdyx8l" path="res://scenes/game_area/game_grid.gd" id="3_5tue2"]
+[ext_resource type="Script" uid="uid://k2bgpf8b105x" path="res://scenes/game_area/game_area.gd" id="3_8kk48"]
+[ext_resource type="Resource" uid="uid://ctx44o1lf6t3k" path="res://data/gem_stat/gems/red_stat.tres" id="4_bxbl0"]
+[ext_resource type="Script" uid="uid://ddqfrtk4s6nnp" path="res://scenes/game_state_machine/game_state_machine.gd" id="5_asdgj"]
+[ext_resource type="Resource" uid="uid://bkbo8wbc2nwnq" path="res://data/gem_stat/gems/blue_stat.tres" id="5_c13hg"]
+[ext_resource type="Resource" uid="uid://dki2jrd0gp12s" path="res://data/gem_stat/gems/green_stat.tres" id="6_o7rjm"]
+[ext_resource type="Script" uid="uid://bqkqbn4tycf3o" path="res://scenes/game_state_machine/game_state/states/基础状态.gd" id="6_vmsrg"]
+[ext_resource type="Resource" uid="uid://xqimnb4w33au" path="res://data/gem_stat/gems/yellow_stat.tres" id="7_xr6px"]
+[ext_resource type="Texture2D" uid="uid://cdfybvoy5lqor" path="res://assets/icon/127.png" id="9_gy0qm"]
+[ext_resource type="Script" uid="uid://dyege78kd24cg" path="res://scenes/game_state_machine/game_state/states/交换状态.gd" id="9_w4nra"]
+[ext_resource type="Texture2D" uid="uid://dwffcqcyiqhhf" path="res://assets/icon/141.png" id="10_dh340"]
+[ext_resource type="Script" uid="uid://is0un4vi4xko" path="res://scenes/game_state_machine/game_state/states/消除状态.gd" id="10_t3vx8"]
+[ext_resource type="Script" uid="uid://wdnybkcisl0v" path="res://scenes/game_state_machine/game_state/states/下落状态.gd" id="11_rhjlh"]
+[ext_resource type="Script" uid="uid://sypntaoxfwd1" path="res://scenes/game_state_machine/game_state/states/生成状态.gd" id="12_tp84n"]
+[ext_resource type="Script" uid="uid://bpp84ccxe1m7u" path="res://scenes/game_related/gem_spawner.gd" id="19_8kk48"]
+[ext_resource type="Script" uid="uid://dxb3b3xv7e1gu" path="res://scenes/game_related/grid_hover.gd" id="19_fir7s"]
+[ext_resource type="Script" uid="uid://35np3ltqsp6w" path="res://scenes/game_related/game_calculator.gd" id="20_wqbss"]
+[ext_resource type="Script" uid="uid://c7si2rlaopo5a" path="res://scenes/game_related/gem_swap.gd" id="22_gy0qm"]
+[ext_resource type="Script" uid="uid://6yu2s6kk5cjf" path="res://scenes/game_related/gem_delete.gd" id="23_dh340"]
+[ext_resource type="Script" uid="uid://b4yipr74rwgm4" path="res://scenes/game_related/falldown_calculator.gd" id="24_ybinm"]
+[ext_resource type="Script" uid="uid://cf30fi133e64v" path="res://scenes/game_related/falldown_animator.gd" id="25_5ilg6"]
+
+[sub_resource type="TileSet" id="TileSet_5tue2"]
+tile_size = Vector2i(36, 36)
+
+[node name="Arena" type="Node2D"]
+script = ExtResource("1_aj7ud")
+gems = Array[ExtResource("2_ybinm")]([ExtResource("3_5ilg6"), ExtResource("4_bxbl0"), ExtResource("5_c13hg"), ExtResource("6_o7rjm"), ExtResource("7_xr6px")])
+
+[node name="Visuals" type="Node" parent="."]
+
+[node name="Background" type="TextureRect" parent="Visuals"]
+z_index = -1
+offset_right = 640.0
+offset_bottom = 360.0
+texture = ExtResource("1_1qjuf")
+expand_mode = 1
+
+[node name="MainArea" type="Panel" parent="Visuals"]
+z_index = -1
+offset_left = 168.0
+offset_top = 28.0
+offset_right = 472.0
+offset_bottom = 328.0
+
+[node name="GameArea" type="TileMapLayer" parent="." node_paths=PackedStringArray("game_grid")]
+position = Vector2(176, 36)
+tile_set = SubResource("TileSet_5tue2")
+script = ExtResource("3_8kk48")
+game_grid = NodePath("GameGrid")
+
+[node name="GameGrid" type="Node2D" parent="GameArea"]
+script = ExtResource("3_5tue2")
+size = Vector2i(8, 8)
+
+[node name="GameStateMachine" type="Node" parent="."]
+script = ExtResource("5_asdgj")
+metadata/_custom_type_script = "uid://ddqfrtk4s6nnp"
+
+[node name="基础状态" type="Node" parent="GameStateMachine"]
+script = ExtResource("6_vmsrg")
+
+[node name="交换状态" type="Node" parent="GameStateMachine"]
+script = ExtResource("9_w4nra")
+state = 1
+
+[node name="消除状态" type="Node" parent="GameStateMachine"]
+script = ExtResource("10_t3vx8")
+state = 2
+
+[node name="生成状态" type="Node" parent="GameStateMachine"]
+script = ExtResource("12_tp84n")
+state = 4
+
+[node name="下落状态" type="Node" parent="GameStateMachine"]
+script = ExtResource("11_rhjlh")
+state = 3
+
+[node name="GridHover" type="Node" parent="." node_paths=PackedStringArray("area")]
+script = ExtResource("19_fir7s")
+area = NodePath("../GameArea")
+metadata/_custom_type_script = "uid://dxb3b3xv7e1gu"
+
+[node name="IconSelect" type="TextureRect" parent="GridHover"]
+visible = false
+modulate = Color(1, 0.84313726, 0, 1)
+offset_right = 36.0
+offset_bottom = 36.0
+texture = ExtResource("9_gy0qm")
+
+[node name="IconMaybeSelect" type="TextureRect" parent="GridHover"]
+visible = false
+modulate = Color(0.972549, 0.78431374, 0.8627451, 1)
+offset_right = 36.0
+offset_bottom = 36.0
+texture = ExtResource("10_dh340")
+
+[node name="GemSpawner" type="Node" parent="." node_paths=PackedStringArray("area")]
+script = ExtResource("19_8kk48")
+area = NodePath("../GameArea")
+metadata/_custom_type_script = "uid://bpp84ccxe1m7u"
+
+[node name="GameCalculator" type="Node" parent="." node_paths=PackedStringArray("area")]
+script = ExtResource("20_wqbss")
+area = NodePath("../GameArea")
+metadata/_custom_type_script = "uid://35np3ltqsp6w"
+
+[node name="GemSwap" type="Node" parent="." node_paths=PackedStringArray("game_area")]
+script = ExtResource("22_gy0qm")
+game_area = NodePath("../GameArea")
+metadata/_custom_type_script = "uid://c7si2rlaopo5a"
+
+[node name="GemDelete" type="Node" parent="." node_paths=PackedStringArray("area")]
+script = ExtResource("23_dh340")
+area = NodePath("../GameArea")
+metadata/_custom_type_script = "uid://6yu2s6kk5cjf"
+
+[node name="FallDownCalculator" type="Node" parent="." node_paths=PackedStringArray("area")]
+script = ExtResource("24_ybinm")
+area = NodePath("../GameArea")
+metadata/_custom_type_script = "uid://b4yipr74rwgm4"
+
+[node name="FallDownAnimator" type="Node" parent="."]
+script = ExtResource("25_5ilg6")
+fall_duration = 0.5
+metadata/_custom_type_script = "uid://cf30fi133e64v"
