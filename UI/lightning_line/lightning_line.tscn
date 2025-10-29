@@ -1,0 +1,75 @@
+[gd_scene load_steps=8 format=3 uid="uid://bqfvxyrbiaxnt"]
+
+[ext_resource type="Script" uid="uid://bwcdbx1jbclay" path="res://UI/lightning_line/lightning_line.gd" id="1_dclky"]
+[ext_resource type="Shader" uid="uid://cw4i7yndkrsnm" path="res://assets/shader/lightning_line.gdshader" id="1_fsoj6"]
+
+[sub_resource type="ShaderMaterial" id="ShaderMaterial_7sihk"]
+shader = ExtResource("1_fsoj6")
+shader_parameter/lightning_number = 5
+shader_parameter/amplitude = Vector2(2, 1)
+shader_parameter/offset = 0.45
+shader_parameter/thickness = 0.01
+shader_parameter/speed = 3.0
+shader_parameter/base_color = Color(1, 1, 1, 1)
+shader_parameter/glow_thickness = 0.08
+shader_parameter/glow_color = Color(1, 0.84313726, 0, 0.5019608)
+shader_parameter/alpha = 1.0
+
+[sub_resource type="CanvasItemMaterial" id="SparkMaterial"]
+blend_mode = 1
+
+[sub_resource type="Gradient" id="Gradient_spark"]
+colors = PackedColorArray(1, 1, 0.5, 1, 1, 0.3, 0, 0)
+
+[sub_resource type="GradientTexture2D" id="GradientTexture2D_spark"]
+gradient = SubResource("Gradient_spark")
+width = 16
+height = 16
+fill = 1
+fill_from = Vector2(0.5, 0.5)
+
+[sub_resource type="ParticleProcessMaterial" id="ParticleProcessMaterial_spark"]
+initial_velocity_min = 30.0
+initial_velocity_max = 80.0
+angular_velocity_min = -180.0
+angular_velocity_max = 180.0
+gravity = Vector3(0, 50, 0)
+scale_min = 0.2
+scale_max = 0.6
+color = Color(1, 0.8, 0.2, 1)
+
+[node name="LightningLine" type="Node2D"]
+z_index = 2
+script = ExtResource("1_dclky")
+auto_destroy_after_sec = 1.5
+
+[node name="Lightning" type="ColorRect" parent="."]
+material = SubResource("ShaderMaterial_7sihk")
+custom_minimum_size = Vector2(0, 16)
+anchors_preset = 9
+anchor_bottom = 1.0
+offset_top = -8.0
+offset_right = 100.0
+offset_bottom = 8.0
+grow_vertical = 2
+
+[node name="SparkParticles" type="GPUParticles2D" parent="."]
+material = SubResource("SparkMaterial")
+amount = 15
+texture = SubResource("GradientTexture2D_spark")
+lifetime = 0.5
+preprocess = 0.3
+collision_base_size = 0.0
+visibility_rect = Rect2(-50, -50, 300, 100)
+process_material = SubResource("ParticleProcessMaterial_spark")
+
+[node name="SparkParticlesEnd" type="GPUParticles2D" parent="."]
+material = SubResource("SparkMaterial")
+position = Vector2(100, 0)
+rotation = -3.1415925
+amount = 15
+texture = SubResource("GradientTexture2D_spark")
+lifetime = 0.5
+preprocess = 0.3
+visibility_rect = Rect2(-50, -50, 300, 100)
+process_material = SubResource("ParticleProcessMaterial_spark")

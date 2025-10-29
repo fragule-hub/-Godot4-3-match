@@ -1,9 +1,8 @@
-[gd_scene load_steps=27 format=3 uid="uid://cop6xkqylcqqi"]
+[gd_scene load_steps=34 format=3 uid="uid://cop6xkqylcqqi"]
 
 [ext_resource type="Texture2D" uid="uid://dtk72qvo858gg" path="res://assets/backgrounds/5.png" id="1_1qjuf"]
 [ext_resource type="Script" uid="uid://rtf1mefoen6m" path="res://scenes/arena/arena.gd" id="1_aj7ud"]
 [ext_resource type="Script" uid="uid://mryah4s0r6yd" path="res://data/gem_stat/gem_stat.gd" id="2_ybinm"]
-[ext_resource type="Resource" uid="uid://bfiw0y45ea3pe" path="res://data/gem_stat/gems/white_stat.tres" id="3_5ilg6"]
 [ext_resource type="Script" uid="uid://ca8inr7rdyx8l" path="res://scenes/game_area/game_grid.gd" id="3_5tue2"]
 [ext_resource type="Script" uid="uid://k2bgpf8b105x" path="res://scenes/game_area/game_area.gd" id="3_8kk48"]
 [ext_resource type="Resource" uid="uid://ctx44o1lf6t3k" path="res://data/gem_stat/gems/red_stat.tres" id="4_bxbl0"]
@@ -15,9 +14,12 @@
 [ext_resource type="Texture2D" uid="uid://cdfybvoy5lqor" path="res://assets/icon/127.png" id="9_gy0qm"]
 [ext_resource type="Script" uid="uid://dyege78kd24cg" path="res://scenes/game_state_machine/game_state/states/交换状态.gd" id="9_w4nra"]
 [ext_resource type="Texture2D" uid="uid://dwffcqcyiqhhf" path="res://assets/icon/141.png" id="10_dh340"]
+[ext_resource type="Script" uid="uid://dgletuwdjt8nt" path="res://scenes/game_state_machine/game_state/states/匹配状态.gd" id="10_match"]
 [ext_resource type="Script" uid="uid://is0un4vi4xko" path="res://scenes/game_state_machine/game_state/states/消除状态.gd" id="10_t3vx8"]
 [ext_resource type="Script" uid="uid://wdnybkcisl0v" path="res://scenes/game_state_machine/game_state/states/下落状态.gd" id="11_rhjlh"]
 [ext_resource type="Script" uid="uid://sypntaoxfwd1" path="res://scenes/game_state_machine/game_state/states/生成状态.gd" id="12_tp84n"]
+[ext_resource type="Script" uid="uid://rggps3m6ggpv" path="res://scenes/game_state_machine/game_state/states/特殊生成状态.gd" id="17_io46r"]
+[ext_resource type="Script" uid="uid://632ap0hf25vx" path="res://scenes/game_state_machine/game_state/states/特殊消除状态.gd" id="18_f7e6h"]
 [ext_resource type="Script" uid="uid://bpp84ccxe1m7u" path="res://scenes/game_related/gem_spawner.gd" id="19_8kk48"]
 [ext_resource type="Script" uid="uid://dxb3b3xv7e1gu" path="res://scenes/game_related/grid_hover.gd" id="19_fir7s"]
 [ext_resource type="Script" uid="uid://35np3ltqsp6w" path="res://scenes/game_related/game_calculator.gd" id="20_wqbss"]
@@ -25,13 +27,18 @@
 [ext_resource type="Script" uid="uid://6yu2s6kk5cjf" path="res://scenes/game_related/gem_delete.gd" id="23_dh340"]
 [ext_resource type="Script" uid="uid://b4yipr74rwgm4" path="res://scenes/game_related/falldown_calculator.gd" id="24_ybinm"]
 [ext_resource type="Script" uid="uid://cf30fi133e64v" path="res://scenes/game_related/falldown_animator.gd" id="25_5ilg6"]
+[ext_resource type="Script" uid="uid://cpx8vda5p1yeu" path="res://scenes/game_related/remove_info_calculator.gd" id="26_5ilg6"]
+[ext_resource type="PackedScene" uid="uid://cjcyxjvcdcv25" path="res://UI/remove_statistics/remove_statistics.tscn" id="27_bxbl0"]
+[ext_resource type="Script" uid="uid://ddniuxmqke128" path="res://scenes/game_related/special_spawner.gd" id="28_c13hg"]
+[ext_resource type="Script" uid="uid://bn025dsahqusv" path="res://scenes/game_related/special_delete.gd" id="29_o7rjm"]
+[ext_resource type="Script" uid="uid://bdipwuy8it7sl" path="res://scenes/game_related/special_delete_animator.gd" id="33_f7e6h"]
 
 [sub_resource type="TileSet" id="TileSet_5tue2"]
 tile_size = Vector2i(36, 36)
 
 [node name="Arena" type="Node2D"]
 script = ExtResource("1_aj7ud")
-gems = Array[ExtResource("2_ybinm")]([ExtResource("3_5ilg6"), ExtResource("4_bxbl0"), ExtResource("5_c13hg"), ExtResource("6_o7rjm"), ExtResource("7_xr6px")])
+gems = Array[ExtResource("2_ybinm")]([ExtResource("5_c13hg"), ExtResource("6_o7rjm"), ExtResource("7_xr6px"), ExtResource("4_bxbl0")])
 
 [node name="Visuals" type="Node" parent="."]
 
@@ -48,6 +55,10 @@ offset_left = 168.0
 offset_top = 28.0
 offset_right = 472.0
 offset_bottom = 328.0
+
+[node name="RemoveStatistics" parent="Visuals" instance=ExtResource("27_bxbl0")]
+unique_name_in_owner = true
+offset_right = 0.0
 
 [node name="GameArea" type="TileMapLayer" parent="." node_paths=PackedStringArray("game_grid")]
 position = Vector2(176, 36)
@@ -70,15 +81,27 @@ script = ExtResource("6_vmsrg")
 script = ExtResource("9_w4nra")
 state = 1
 
+[node name="匹配状态" type="Node" parent="GameStateMachine"]
+script = ExtResource("10_match")
+state = 5
+
 [node name="消除状态" type="Node" parent="GameStateMachine"]
 script = ExtResource("10_t3vx8")
 state = 2
+
+[node name="特殊生成状态" type="Node" parent="GameStateMachine"]
+script = ExtResource("17_io46r")
+state = 7
+
+[node name="特殊消除状态" type="Node" parent="GameStateMachine"]
+script = ExtResource("18_f7e6h")
+state = 6
 
 [node name="生成状态" type="Node" parent="GameStateMachine"]
 script = ExtResource("12_tp84n")
 state = 4
 
-[node name="下落状态" type="Node" parent="GameStateMachine"]
+[node name="下落动画状态" type="Node" parent="GameStateMachine"]
 script = ExtResource("11_rhjlh")
 state = 3
 
@@ -130,3 +153,32 @@ metadata/_custom_type_script = "uid://b4yipr74rwgm4"
 script = ExtResource("25_5ilg6")
 fall_duration = 0.5
 metadata/_custom_type_script = "uid://cf30fi133e64v"
+
+[node name="RemoveInfoCalculator" type="Node" parent="."]
+script = ExtResource("26_5ilg6")
+metadata/_custom_type_script = "uid://cpx8vda5p1yeu"
+
+[node name="SpecialSpawner" type="Node" parent="." node_paths=PackedStringArray("gem_delete", "area")]
+script = ExtResource("28_c13hg")
+gem_delete = NodePath("../GemDelete")
+area = NodePath("../GameArea")
+"四消" = 3
+"五消" = 3
+"十字" = 3
+"大十字" = 3
+"长连" = 3
+metadata/_custom_type_script = "uid://ddniuxmqke128"
+
+[node name="SpecialDelete" type="Node" parent="." node_paths=PackedStringArray("gem_delete", "area")]
+script = ExtResource("29_o7rjm")
+gem_delete = NodePath("../GemDelete")
+area = NodePath("../GameArea")
+special_delete_array = Array[int]([1, 2, 3])
+metadata/_custom_type_script = "uid://bn025dsahqusv"
+
+[node name="SpecialDeleteAnimator" type="Node" parent="." node_paths=PackedStringArray("area")]
+script = ExtResource("33_f7e6h")
+area = NodePath("../GameArea")
+boom_duration_sec = 0.75
+lightning_duration_sec = 1.0
+shock_duration_sec = 0.5

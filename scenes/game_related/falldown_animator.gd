@@ -1,61 +1,30 @@
 extends Node
 class_name FallDownAnimator
 
-# 信号：所有动画完成
+# 统一执行下落与生成的移动动画，并在全部完成后发射 all_animations_completed
 signal all_animations_completed
 signal wave_completed
 
-# 下落动画持续时间
 @export var fall_duration: float = 0.3
 
-# 当前是否正在执行动画
-var _is_animating: bool = false
-var _pending_count: int = 0
+var _pending_count := 0
 
-func _ready() -> void:
-	pass
-
-# 仅执行所有移动动画（不修改网格）
-func execute_all_moves(move_infos: Array[MoveInfo]) -> void:
-	"""
-	执行所有移动动画，包括下落和新生成的宝石
-	"""
-	if _is_animating:
-		push_warning("FallDownAnimator: 已经在执行动画，忽略重复调用")
-		return
-	
-	if move_infos.is_empty():
+# 执行所有移动（下落 + 生成），并等待所有 Gem.move_completed 收敛
+func execute_all_moves(moves: Array[MoveInfo]) -> void:
+	if moves.is_empty():
 		all_animations_completed.emit()
 		return
-	
-	_is_animating = true
-	await _execute_wave(move_infos)
-	_is_animating = false
-	all_animations_completed.emit()
-
-# 执行波次动画（每个子数组是一轮，不修改网格）
-func execute_waves(waves: Array[Array]) -> void:
-	if _is_animating:
-		push_warning("FallDownAnimator: 已经在执行动画，忽略重复调用")
-		return
-	_is_animating = true
-	for wave in waves:
-		if wave.is_empty():
-			continue
-		await _execute_wave(wave)
-	_is_animating = false
-	all_animations_completed.emit()
-
-# 执行单轮动画，区分原有与上方新生成
-func _execute_wave(move_infos: Array[MoveInfo]) -> void:
 	var moving_gems: Array[Gem] = []
 	var fall_moves: Array[MoveInfo] = []
 	var spawn_moves: Array[MoveInfo] = []
-	for move_info in move_infos:
-		if move_info.from_tile.y < 0:
-			spawn_moves.append(move_info)
-		else:
+	for move_info in moves:
+		if move_info == null:
+			continue
+		# 分类：网格内(>=0)为下落；y<0 表示从上方生成
+		if move_info.from_tile.y >= 0:
 			fall_moves.append(move_info)
+		else:
+			spawn_moves.append(move_info)
 	# 原有宝石下落：开启弹跳（use_bounce=true），不旋转
 	for move_info in fall_moves:
 		var gem = move_info.gem
@@ -73,6 +42,7 @@ func _execute_wave(move_infos: Array[MoveInfo]) -> void:
 			moving_gems.append(gem)
 	# 等待所有gem移动完成（信号聚合）
 	await _wait_all_completed(moving_gems)
+	all_animations_completed.emit()
 
 func _wait_all_completed(moving_gems: Array[Gem]) -> void:
 	_pending_count = 0
@@ -88,14 +58,4 @@ func _on_one_move_completed() -> void:
 	_pending_count -= 1
 	if _pending_count <= 0:
 		wave_completed.emit()
-
-# 检查是否正在执行动画
-func is_animating() -> bool:
-	"""检查是否正在执行动画"""
-	return _is_animating
-
-# 停止所有动画（紧急情况使用）
-func stop_all_animations() -> void:
-	"""停止所有正在进行的动画"""
-	_is_animating = false
 	

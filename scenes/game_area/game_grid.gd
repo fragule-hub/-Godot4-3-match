@@ -123,15 +123,3 @@ func is_empty(tile: Vector2i) -> bool:
 # 获取当前空位数量
 func get_empty_count() -> int:
 	return empty_count
-
-# 获取已占用(不为空的)位置数量
-func get_occupied_count() -> int:
-	return (size.x * size.y) - empty_count
-
-# 检查网格是否已满
-func is_full() -> bool:
-	return empty_count == 0
-
-# 检查网格是否全空
-func is_grid_empty() -> bool:
-	return empty_count == size.x * size.y

@@ -1,5 +1,7 @@
+# 状态：生成
+# - 应用下落到真实网格（数据层），为顶部空位生成宝石与移动信息
+# - 合并所有 MoveInfo 并进入下落状态播放统一动画
 extends GameState
-
 
 func _on_enter() -> void:
 	if not game:

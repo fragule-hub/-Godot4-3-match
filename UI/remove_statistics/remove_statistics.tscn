@@ -1,0 +1,87 @@
+[gd_scene load_steps=2 format=3 uid="uid://cjcyxjvcdcv25"]
+
+[ext_resource type="Script" uid="uid://ri44wb5v3uqi" path="res://UI/remove_statistics/remove_statistics.gd" id="1_4mnhx"]
+
+[node name="RemoveStatistics" type="Control"]
+layout_mode = 3
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+offset_right = -480.0
+grow_horizontal = 2
+grow_vertical = 2
+script = ExtResource("1_4mnhx")
+
+[node name="HBoxContainer" type="HBoxContainer" parent="."]
+custom_minimum_size = Vector2(160, 360)
+layout_mode = 0
+offset_right = 160.0
+offset_bottom = 360.0
+
+[node name="消除类型" type="VBoxContainer" parent="HBoxContainer"]
+custom_minimum_size = Vector2(80, 360)
+layout_mode = 2
+
+[node name="三消" type="Button" parent="HBoxContainer/消除类型"]
+unique_name_in_owner = true
+layout_mode = 2
+text = "三消："
+
+[node name="四消" type="Button" parent="HBoxContainer/消除类型"]
+unique_name_in_owner = true
+layout_mode = 2
+text = "四消："
+
+[node name="五消" type="Button" parent="HBoxContainer/消除类型"]
+unique_name_in_owner = true
+layout_mode = 2
+text = "五消："
+
+[node name="十字" type="Button" parent="HBoxContainer/消除类型"]
+unique_name_in_owner = true
+layout_mode = 2
+text = "十字："
+
+[node name="大十字" type="Button" parent="HBoxContainer/消除类型"]
+unique_name_in_owner = true
+layout_mode = 2
+text = "大十字："
+
+[node name="长连" type="Button" parent="HBoxContainer/消除类型"]
+unique_name_in_owner = true
+layout_mode = 2
+text = "长连："
+
+[node name="摧毁" type="Button" parent="HBoxContainer/消除类型"]
+unique_name_in_owner = true
+layout_mode = 2
+text = "摧毁："
+
+[node name="颜色" type="VBoxContainer" parent="HBoxContainer"]
+custom_minimum_size = Vector2(80, 360)
+layout_mode = 2
+
+[node name="红" type="Button" parent="HBoxContainer/颜色"]
+unique_name_in_owner = true
+layout_mode = 2
+text = "红："
+
+[node name="蓝" type="Button" parent="HBoxContainer/颜色"]
+unique_name_in_owner = true
+layout_mode = 2
+text = "蓝："
+
+[node name="黄" type="Button" parent="HBoxContainer/颜色"]
+unique_name_in_owner = true
+layout_mode = 2
+text = "黄："
+
+[node name="绿" type="Button" parent="HBoxContainer/颜色"]
+unique_name_in_owner = true
+layout_mode = 2
+text = "绿："
+
+[node name="白" type="Button" parent="HBoxContainer/颜色"]
+unique_name_in_owner = true
+layout_mode = 2
+text = "白："

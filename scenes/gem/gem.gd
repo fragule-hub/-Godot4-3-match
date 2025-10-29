@@ -2,11 +2,13 @@ extends Control
 class_name Gem
 
 const HALF_GEM_SIZE := Vector2(18, 18)
+const GEM_SIZE := Vector2(36, 36)
 const EFFECT_SPEED_SCALE := 2.0
 const DEFAULT_ANIMATION := "ranbow"
 
 signal move_completed()
 signal destroy_completed()
+signal move_and_destroy_completed()
 
 @onready var animated_sprite: AnimatedSprite2D = $AnimatedSprite2D
 
@@ -32,6 +34,7 @@ var _current_animation: String = ""
 
 @onready var move_tween: Tween
 @onready var destroy_tween: Tween
+@onready var move_and_destroy_tween: Tween
 
 
 func _ready() -> void:
@@ -97,13 +100,13 @@ func _apply_lightning_material() -> void:
 	if animated_sprite and _lightning_material:
 		animated_sprite.material = _lightning_material
 
-func _apply_fire_material(noise_size: float, noise_speed: float) -> void:
+func _apply_fire_material(noise_size: float, noise_speed: float, fire_color: bool) -> void:
 	if not _fire_material:
 		_apply_destroy_material()
 		return
 	_fire_material.set_shader_parameter("noise_size", noise_size)
 	_fire_material.set_shader_parameter("noise_speed", noise_speed)
-	_apply_fire_color_by_gem_color()
+	_apply_fire_color_by_gem_color(fire_color)
 	if animated_sprite:
 		animated_sprite.material = _fire_material
 
@@ -119,33 +122,34 @@ func _refresh_special_visual() -> void:
 		GemStat.SpecialType.LIGHTING:
 			_apply_lightning_material()
 		GemStat.SpecialType.SMALL_EXPLOSION:
-			_apply_fire_material(0.2, 1.0)
+			_apply_fire_material(0.2, 1.0, false)
 		GemStat.SpecialType.EXPLOSION:
-			_apply_fire_material(1.5, 2.0)
+			_apply_fire_material(1.5, 2.0, true)
 		GemStat.SpecialType.OTHER:
 			_apply_destroy_material()
 
 
 # 根据宝石基础颜色映射火焰颜色（白黄蓝红绿），其他使用默认
-func _apply_fire_color_by_gem_color() -> void:
+func _apply_fire_color_by_gem_color(fire_color: bool) -> void:
 	if not _fire_material or not _gem_stat:
 		return
 	var c = _gem_stat.color
 	var col: Color = Color(1.0, 0.45, 0.05, 1.0) # 默认橙色
-	match c:
-		GemStat.GemColor.WHITE:
-			col = Color(1.0, 1.0, 1.0, 1.0)
-		GemStat.GemColor.YELLOW:
-			col = Color(1.0, 0.85, 0.20, 1.0)
-		GemStat.GemColor.BLUE:
-			col = Color(0.35, 0.65, 1.0, 1.0)
-		GemStat.GemColor.RED:
-			col = Color(1.0, 0.35, 0.25, 1.0)
-		GemStat.GemColor.GREEN:
-			col = Color(0.35, 0.95, 0.45, 1.0)
-		_:
-			# 其他颜色使用默认橙色
-			pass
+	if fire_color:
+		match c:
+			GemStat.GemColor.WHITE:
+				col = Color(1.0, 1.0, 1.0, 1.0)
+			GemStat.GemColor.YELLOW:
+				col = Color(1.0, 0.85, 0.20, 1.0)
+			GemStat.GemColor.BLUE:
+				col = Color(0.35, 0.65, 1.0, 1.0)
+			GemStat.GemColor.RED:
+				col = Color(1.0, 0.35, 0.25, 1.0)
+			GemStat.GemColor.GREEN:
+				col = Color(0.35, 0.95, 0.45, 1.0)
+			_:
+				# 其他颜色使用默认橙色
+				pass
 	_fire_material.set_shader_parameter("edge_color", col)
 
 
@@ -169,11 +173,6 @@ func update_animation() -> void:
 				animated_sprite.play()
 	_refresh_special_visual()
 
-# 动态改变宝石颜色
-func change_gem_color(new_color: GemStat.GemColor):
-	if _gem_stat:
-		_gem_stat.set_gem_color(new_color)
-		update_animation()
 
 
 # ==================== 旋转帧动画相关函数 ====================
@@ -322,3 +321,95 @@ func _on_destroy_animation_finished():
 func is_destroying() -> bool:
 	"""检查gem是否正在播放销毁动画"""
 	return destroy_tween != null and destroy_tween.is_valid()
+
+
+# ==================== 移动与销毁动画相关函数 ====================
+
+# 开始移动与销毁动画
+func move_and_destroy_animation(target_global_position: Vector2, duration: float = 0.3):
+	"""
+	移动与销毁动画：朝着目标位置移动，同时逐渐虚化和旋转，最后销毁
+	参数:
+		target_global_position: 目标全局位置
+		duration: 动画持续时间（默认1.0秒）
+	"""
+	# 如果已有移动与销毁动画在运行，先停止它
+	if move_and_destroy_tween:
+		if move_and_destroy_tween.finished.is_connected(_on_move_and_destroy_animation_finished):
+			move_and_destroy_tween.finished.disconnect(_on_move_and_destroy_animation_finished)
+		move_and_destroy_tween.kill()
+		move_and_destroy_tween = null
+	
+	# 停止其他可能正在运行的动画
+	if move_tween:
+		move_tween.kill()
+		move_tween = null
+	if destroy_tween:
+		destroy_tween.kill()
+		destroy_tween = null
+	
+	# 计算距离和角度
+	var start_position = global_position
+	var direction = target_global_position - start_position
+	var distance = direction.length()
+	var target_angle = direction.angle()
+	
+	# 根据距离计算倾斜程度（距离越远越倾斜，最大45度）
+	var max_tilt_degrees = 45.0
+	var normalized_distance = min(distance / 200.0, 1.0)  # 200像素为最大倾斜距离
+	var target_tilt = normalized_distance * max_tilt_degrees
+	
+	# 根据方向决定倾斜方向
+	if target_angle > 0:
+		target_tilt = -target_tilt  # 向下移动时向左倾斜
+	
+	# 确保使用正常材质（不使用销毁材质）
+	if animated_sprite:
+		animated_sprite.material = null
+	
+	# 开始旋转动画
+	start_effect_animation()
+	
+	# 创建新的Tween
+	move_and_destroy_tween = create_tween()
+	move_and_destroy_tween.set_parallel(true)  # 允许并行动画
+	
+	# 位置动画：移动到目标位置
+	move_and_destroy_tween.tween_property(self, "global_position", target_global_position, duration)
+	move_and_destroy_tween.set_ease(Tween.EASE_IN)
+	move_and_destroy_tween.set_trans(Tween.TRANS_CUBIC)
+	
+	# 透明度动画：完全淡出到0
+	move_and_destroy_tween.tween_property(self, "modulate:a", 0.0, duration)
+	move_and_destroy_tween.set_ease(Tween.EASE_OUT)
+	move_and_destroy_tween.set_trans(Tween.TRANS_QUAD)
+	
+	# 旋转动画：根据移动方向倾斜
+	move_and_destroy_tween.tween_property(self, "rotation_degrees", target_tilt, duration * 0.7)
+	move_and_destroy_tween.set_ease(Tween.EASE_OUT)
+	move_and_destroy_tween.set_trans(Tween.TRANS_BACK)
+	
+	# 连接完成信号
+	move_and_destroy_tween.finished.connect(_on_move_and_destroy_animation_finished)
+
+# 移动与销毁动画完成时的回调函数
+func _on_move_and_destroy_animation_finished():
+	"""移动与销毁动画完成时调用"""
+	# 停止旋转动画
+	if animated_sprite and animated_sprite.speed_scale != 0.0:
+		_stop_effect_animation()
+	
+	# 发送移动与销毁完成信号
+	move_and_destroy_completed.emit()
+	
+	# 断开信号连接
+	if move_and_destroy_tween and move_and_destroy_tween.finished.is_connected(_on_move_and_destroy_animation_finished):
+		move_and_destroy_tween.finished.disconnect(_on_move_and_destroy_animation_finished)
+	
+	# 清理Tween引用
+	move_and_destroy_tween = null
+
+# 检查是否正在进行移动与销毁动画
+func is_move_and_destroying() -> bool:
+	"""检查gem是否正在播放移动与销毁动画"""
+	return move_and_destroy_tween != null and move_and_destroy_tween.is_valid()

@@ -1,5 +1,7 @@
+# 状态：下落
+# - 统一播放所有下落与生成动画（视觉层）
+# - 动画完成后清空缓存并返回交换状态继续处理队列
 extends GameState
-
 
 func _on_enter() -> void:
 	if not game:
@@ -22,6 +24,7 @@ func process_physics(_delta: float) -> void:
 func _on_input(_event: InputEvent) -> void:
 	pass
 
+# 动画完成后：清空缓存并回到交换状态
 func _on_all_falls_completed() -> void:
 	# 清理缓存并回到交换状态，继续处理队列
 	if game:

@@ -121,13 +121,17 @@ func _create_gem_instance(gem_stat: GemStat) -> Gem:
 	if not gem_stat:
 		push_error("GemSpawner: gem_stat为null")
 		return null
-	
+
 	var new_gem := GEM.instantiate() as Gem
 	if not new_gem:
 		push_error("GemSpawner: 无法实例化宝石")
 		return null
-	
-	new_gem.gem_stat = gem_stat
+
+	# 为每个宝石复制独立的 GemStat，避免共享资源被修改时影响所有同色宝石
+	var per_gem_stat := gem_stat.duplicate(true) as GemStat
+	if per_gem_stat == null:
+		per_gem_stat = gem_stat.duplicate() as GemStat
+	new_gem.gem_stat = per_gem_stat
 	return new_gem
 
 # 将宝石放置到网格中
